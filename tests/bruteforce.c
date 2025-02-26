@@ -4,9 +4,8 @@
 int main() {
   size_t target = 0x1000; // 4KB
   target *= 1024;         // 4MB
-  target *= 1024;         // 4GB
 
-  Arena *arena = ArenaCreate(NULL);
+  Arena *arena = ArenaCreate(NULL, 0);
   if (!arena) {
     return 1;
   }
@@ -21,7 +20,7 @@ int main() {
     total += 1024;
   }
 
-  printf("Total memory allocated: %lx Bytes\n", total);
+  printf("Total memory allocated: 0x%lx\n", total);
 
   ArenaDestroy(arena);
   return 0;

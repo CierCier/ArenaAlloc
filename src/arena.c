@@ -1,26 +1,29 @@
 #include "arena.h"
+#include <stddef.h>
 #include <stdlib.h>
 
-Arena *ArenaCreate(Arena *arena) {
+Arena *ArenaCreate(Arena *arena, size_t size) {
   // If an existing arena is passed, it will be reset.
   if (arena) {
     ArenaReset(arena);
     return arena;
   }
 
+  size = size > ARENA_MIN_SIZE ? size : ARENA_MIN_SIZE;
   // If NULL is passed, a new arena will be created.
   Arena *new_arena = (Arena *)malloc(sizeof(Arena));
   if (!new_arena) {
     return NULL;
   }
 
-  new_arena->memory = malloc(ARENA_SIZE);
+  new_arena->memory = malloc(size);
   if (!new_arena->memory) {
     free(new_arena);
     return NULL;
   }
 
   new_arena->cursor = new_arena->memory;
+  new_arena->size = size;
   new_arena->next = NULL;
 
   return new_arena;
@@ -47,14 +50,14 @@ void *ArenaAlloc(Arena *arena, size_t size) {
     return NULL;
   }
 
-  if (size > ARENA_SIZE) {
+  if (size > arena->size) {
     // cannot allocate more than ARENA_SIZE for now
     return NULL;
   }
 
-  if ((arena->cursor - arena->memory) + size > ARENA_SIZE) {
+  if ((arena->cursor - arena->memory) + size > arena->size) {
     // Extend the arena.
-    arena = ArenaExtend(arena);
+    arena = ArenaExtend(arena, size);
     if (!arena) {
       return NULL;
     }
@@ -93,12 +96,12 @@ void ArenaReset(Arena *arena) {
   }
 }
 
-Arena *ArenaExtend(Arena *arena) {
+Arena *ArenaExtend(Arena *arena, size_t size) {
   if (!arena) {
     return NULL;
   }
 
-  Arena *new_arena = ArenaCreate(NULL);
+  Arena *new_arena = ArenaCreate(NULL, size);
   if (!new_arena) {
     return NULL;
   }
@@ -115,7 +118,7 @@ size_t ArenaSize(Arena *arena) {
   size_t size = 0;
   Arena *current = arena;
   while (current) {
-    size += ARENA_SIZE;
+    size += current->size;
     current = current->next;
   }
   return size;

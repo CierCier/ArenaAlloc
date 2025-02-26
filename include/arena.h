@@ -9,7 +9,10 @@ extern "C" {
 
 #include <stddef.h>
 
-#define ARENA_SIZE 4096
+// Use 64MB as the minimum size for the arena.
+// Not recommened to decrease this value. It will increase the number of
+// syscalls
+#define ARENA_MIN_SIZE 0x10000
 
 /* The Arena Structure simply holds the pointer to the memory, the current
  * cursor position and a pointer to the next arena. We simply move a pointer
@@ -21,8 +24,8 @@ extern "C" {
  */
 typedef struct Arena {
   void *memory;
-  void *cursor; // no need to track size, it will always be cursor - memory and
-                // cannot exceed ARENA_SIZE
+  void *cursor;
+  size_t size;
   struct Arena *next;
 } Arena;
 
@@ -30,8 +33,9 @@ typedef struct Arena {
  * Create a new arena or initialize an existing one.
  * If an existing arena is passed, it will be reset.
  * If NULL is passed, a new arena will be created.
+ * Size of arena is max(ARENA_MIN_SIZE, size).
  */
-Arena *ArenaCreate(Arena *arena);
+Arena *ArenaCreate(Arena *arena, size_t size);
 
 /*
  * Destroy an arena and free the memory.
@@ -69,7 +73,7 @@ void ArenaReset(Arena *arena);
  * Useful when you need more memory.
  * Returns the new arena or NULL if memory allocation fails.
  */
-Arena *ArenaExtend(Arena *arena);
+Arena *ArenaExtend(Arena *arena, size_t size);
 
 /*
  * Get the total size of the arena.

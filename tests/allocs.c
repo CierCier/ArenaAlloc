@@ -6,7 +6,7 @@
   fprintf(stderr, "%s:%d:%s(): " fmt, __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 int main() {
-  Arena *arena = ArenaCreate(NULL);
+  Arena *arena = ArenaCreate(NULL, 0);
 
   if (!arena) {
     debug_print("Failed to create arena\n", NULL);
